@@ -1,7 +1,5 @@
 <template>
   <div id="app">
-    <img src="./assets/logo.png">
-
     <div class="hander">
       <router-link to="/index">首页</router-link>
       <router-link to="/Micro">路飞学位课</router-link>
@@ -14,13 +12,11 @@
         </div>
         <router-link v-else to="/login">登录</router-link>
       </div>
-
     </div>
     <router-view/>
     <h1>结束</h1>
   </div>
 </template>
-
 <script>
   export default {
     name: 'App',
@@ -33,15 +29,13 @@
 
   }
 </script>
-
 <style>
   #app {
     font-family: 'Avenir', Helvetica, Arial, sans-serif;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     text-align: center;
     color: #2c3e50;
-
   }
 
   body {
@@ -49,12 +43,9 @@
   }
 
   .hander {
-    background: #fff;
+    background: aquamarine;
     height: 80px;
     line-height: 80px;
-    width: 100%;
-
-
 
   }
 
@@ -64,48 +55,3 @@
   }
 </style>
 
-
-
-
-
-<!--<template>-->
-  <!--<div id="app">-->
-    <!--<img src="./assets/logo.png">-->
-    <!--<router-view/>-->
-  <!--</div>-->
-<!--</template>-->
-
-<!--<script>-->
-<!--export default {-->
-  <!--name: 'App'-->
-<!--}-->
-<!--</script>-->
-
-<!--<style>-->
-<!--#app {-->
-  <!--font-family: 'Avenir', Helvetica, Arial, sans-serif;-->
-      <!-- -webkit-font-smoothing: antialiased;-->
-      <!-- -moz-osx-font-smoothing: grayscale;-->
-  <!--text-align: center;-->
-  <!--color: #2c3e50;-->
-  <!--margin-top: 60px;-->
-<!--}-->
-
-  <!--body {-->
-    <!--margin: 0;-->
-  <!--}-->
-
-  <!--.hander {-->
-    <!--background: #fff;-->
-    <!--height: 80px;-->
-    <!--line-height: 80px;-->
-    <!--width: 100%;-->
-
-
-
-  <!--}-->
-
-  <!--.login {-->
-    <!--float: right;-->
-  <!--}-->
-<!--</style>-->

@@ -21,5 +21,7 @@ urlpatterns = [
     url(r'^login/', views.LoginView.as_view()),
     url(r'^courses/$', views.CourseView.as_view()),
     url(r'^courses/(?P<pk>\d+)\.(?P<format>[a-z0-9]+)$', views.CourseView.as_view()),
+    url(r'^news/$', views.NewsView.as_view()),
+    url(r'^news/(?P<pk>\d+)\.(?P<format>[a-z0-9]+)$', views.NewsView.as_view()),
 
 ]
