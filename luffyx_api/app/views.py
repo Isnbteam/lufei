@@ -124,6 +124,43 @@ class CourseView(views.APIView):
         response = Response(ret)
         response['Access-Control-Allow-Origin'] = "*"
         return response
+class DegreeCourseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.DegreeCourse
+        fields = "__all__"
+        depth = 1
+class DegreeCourseView(views.APIView):
+    def get(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        if pk:
+            courses = models.CourseDetail.objects.get(course_id=pk)
+            courses_obj = CourseDetiailSerializer(instance=courses)
+
+            coursechapterList=models.CourseChapter.objects.filter(course_id=pk)
+            coursechapter_obj=CourseChapterSerializer(instance=coursechapterList,many=True)
+
+            ss=models.OftenAskedQuestion.objects.get
+
+            ret = {
+                'code': "1000",
+                'courses': courses_obj.data,
+                'name': models.Course.objects.get(id=pk).name,
+                'level': models.Course.objects.get(id=pk).get_level_display(),
+                'coursechapterList':coursechapter_obj.data
+
+            }
+        else:
+            degreecourse_list = models.DegreeCourse.objects.all()
+            obj = DegreeCourseSerializer(instance=degreecourse_list, many=True)
+            ret = {
+                'code': 1000,
+                'degreecourseList': obj.data,
+
+            }
+        response = Response(ret)
+        response['Access-Control-Allow-Origin'] = "*"
+        return response
+
 class NewsSerializers(serializers.ModelSerializer):
     class Meta:
         model = models.Article

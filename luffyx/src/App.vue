@@ -2,7 +2,7 @@
   <div id="app">
     <div class="hander">
       <router-link to="/index">首页</router-link>
-      <router-link to="/Micro">路飞学位课</router-link>
+      <router-link to="/degreecourse">路飞学位课</router-link>
       <router-link to="/course">课程</router-link>
       <router-link to="/news">深科技</router-link>
       <div class="login">

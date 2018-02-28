@@ -2,9 +2,9 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Index from '@/components/Index'
 import Course from '@/components/Course'
+import DegreeCourse from '@/components/DegreeCourse'
 import CourseDetail from '@/components/CourseDetail'
 import Login from '@/components/Login'
-import Micro from '@/components/Micro'
 import News from '@/components/News'
 import NewsDetail from '@/components/NewsDetail'
 Vue.use(Router)
@@ -15,6 +15,11 @@ export default new Router({
       path: '/course',
       name: 'course',
       component: Course
+    },
+    {
+      path: '/degreecourse',
+      name: 'degreeCourse',
+      component: DegreeCourse
     },
     {
       path: '/course-detail/:id/',
@@ -35,11 +40,6 @@ export default new Router({
       path: '/index',
       name: 'index',
       component: Index
-    },
-     {
-      path: '/micro',
-      name: 'micro',
-      component: Micro
     },
     {
       path: '/news',
