@@ -14,7 +14,7 @@
       </div>
     </div>
     <router-view/>
-    <h1>结束</h1>
+    <h1 style="clear: left">结束</h1>
   </div>
 </template>
 <script>

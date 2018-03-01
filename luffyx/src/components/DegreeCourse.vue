@@ -4,7 +4,7 @@
       获得体面的工作和生活</h3>
 
       <div class="aa" v-for="item in degreecourseList">
-        <router-link :to="{'path':'/course-detail/'+item.id }">
+        <router-link :to="{'path':'/degreecourse-detail/'+item.id }">
           <img v-bind:src="item.course_img">
           <div>先修知识：{{item.prerequisite}}</div>
           <div>{{item.name}}</div>
@@ -34,7 +34,6 @@
           url: 'http://127.0.0.1:8000/degreecourse/',
           method: 'GET'
         }).then(function (response) {
-          console.log(response.data.degreecourseList)
           that.degreecourseList = response.data.degreecourseList
         })
       }

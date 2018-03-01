@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import Index from '@/components/Index'
 import Course from '@/components/Course'
 import DegreeCourse from '@/components/DegreeCourse'
+import DegreeCourseDetail from '@/components/DegreeCourseDetail'
 import CourseDetail from '@/components/CourseDetail'
 import Login from '@/components/Login'
 import News from '@/components/News'
@@ -17,14 +18,19 @@ export default new Router({
       component: Course
     },
     {
+      path: '/course-detail/:id/',
+      name: 'courseDetail',
+      component: CourseDetail
+    },
+    {
       path: '/degreecourse',
       name: 'degreeCourse',
       component: DegreeCourse
     },
     {
-      path: '/course-detail/:id/',
-      name: 'courseDetail',
-      component: CourseDetail
+      path: '/degreecourse-detail/:id',
+      name: 'degreeourseDetail',
+      component: DegreeCourseDetail
     },
      {
       path: '/login',

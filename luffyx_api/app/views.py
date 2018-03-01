@@ -58,14 +58,29 @@ class LoginView(views.APIView):
 
 
 class CourseSerializer(serializers.ModelSerializer):
+    price=serializers.SerializerMethodField()
+    prices=serializers.SerializerMethodField()
     class Meta:
         model = models.Course
         fields = "__all__"
         depth = 1
+    def get_price(self,obj):
+        ret=[]
+        for i in models.PricePolicy.objects.all():
+            if i.content_object==obj:
+                ret.append(i.price)
 
+        return min(ret)
 
+    def get_prices(self,obj):
+        ret=[]
+        for i in models.PricePolicy.objects.all():
+            if i.content_object==obj:
+                ret.append({'price':i.price,'valid_period':i.get_valid_period_display()})
+        return ret
 class CourseDetiailSerializer(serializers.ModelSerializer):
     oftenaskedquestion=serializers.SerializerMethodField()
+    recommend=serializers.SerializerMethodField()
     class Meta:
         model = models.CourseDetail
         fields = "__all__"
@@ -75,8 +90,13 @@ class CourseDetiailSerializer(serializers.ModelSerializer):
         ret = []
         for i in models.OftenAskedQuestion.objects.all():
             if i.content_object==obj.course:
-                print('ok')
                 ret.append({'question':i.question,'answer':i.answer})
+        return ret
+    def get_recommend(self,obj):
+        ret=[]
+        for i in obj.recommend_courses.all():
+            ret.append({'id':i.id,'name':i.name})
+
         return ret
 class CourseChapterSerializer(serializers.ModelSerializer):
     coursesections=serializers.SerializerMethodField()
@@ -101,13 +121,13 @@ class CourseView(views.APIView):
             coursechapterList=models.CourseChapter.objects.filter(course_id=pk)
             coursechapter_obj=CourseChapterSerializer(instance=coursechapterList,many=True)
 
-            ss=models.OftenAskedQuestion.objects.get
-
+            course=models.Course.objects.get(id=pk)
+            course.level=course.get_level_display()
+            course_obj=CourseSerializer(instance=course)
             ret = {
                 'code': "1000",
                 'courses': courses_obj.data,
-                'name': models.Course.objects.get(id=pk).name,
-                'level': models.Course.objects.get(id=pk).get_level_display(),
+                'course': course_obj.data,
                 'coursechapterList':coursechapter_obj.data
 
             }
@@ -133,21 +153,17 @@ class DegreeCourseView(views.APIView):
     def get(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
         if pk:
-            courses = models.CourseDetail.objects.get(course_id=pk)
-            courses_obj = CourseDetiailSerializer(instance=courses)
+            degreecourse = models.DegreeCourse.objects.get(id=pk)
+            degreecourse_obj = DegreeCourseSerializer(instance=degreecourse)
 
-            coursechapterList=models.CourseChapter.objects.filter(course_id=pk)
-            coursechapter_obj=CourseChapterSerializer(instance=coursechapterList,many=True)
-
-            ss=models.OftenAskedQuestion.objects.get
-
+            courseList=models.Course.objects.filter(degree_course_id=pk)
+            for i in courseList:
+                i.level = i.get_level_display()
+            course=CourseSerializer(instance=courseList,many=True)
             ret = {
                 'code': "1000",
-                'courses': courses_obj.data,
-                'name': models.Course.objects.get(id=pk).name,
-                'level': models.Course.objects.get(id=pk).get_level_display(),
-                'coursechapterList':coursechapter_obj.data
-
+                'degreecourse': degreecourse_obj.data,
+                'courseList':course.data
             }
         else:
             degreecourse_list = models.DegreeCourse.objects.all()
@@ -155,7 +171,6 @@ class DegreeCourseView(views.APIView):
             ret = {
                 'code': 1000,
                 'degreecourseList': obj.data,
-
             }
         response = Response(ret)
         response['Access-Control-Allow-Origin'] = "*"

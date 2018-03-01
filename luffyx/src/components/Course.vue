@@ -6,7 +6,7 @@
     <ul>
       <li  class="aa" v-for="item in courseList">
         <router-link :to="{'path':'/course-detail/'+item.id }">
-          <img src="\static\img\default.png">
+          <img v-bind:src="item.course_img">
           <div>{{item.name}}</div>
           <div>{{item.brief}}</div>
           <div>难度：{{item.level}}</div>
