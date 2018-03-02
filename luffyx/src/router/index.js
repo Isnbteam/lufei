@@ -19,7 +19,7 @@ export default new Router({
     },
     {
       path: '/course-detail/:id/',
-      name: 'courseDetail',
+      name: 'course-detail',
       component: CourseDetail
     },
     {

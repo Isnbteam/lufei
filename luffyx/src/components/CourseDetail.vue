@@ -41,7 +41,7 @@
         <h2>推荐课程</h2>
         <p>若你缺乏相关经验，建议学习以下课程</p>
         <ul>
-          <li v-for="row in courses.recommend" @click="recommendCourse(row.id)">{{row.name}}</li>
+          <li v-for="row in courses.recommend" @click="recommendCourse(row.id)"><h4>{{row.name}}</h4></li>
         </ul>
         <h2>讲师简介</h2>
         <div v-for="item in teachers">
@@ -91,10 +91,12 @@
 
 <script>
   export default {
+      name:'course-detail',
     data () {
       return {
         courseId: this.$route.params.id,
         courses: '',
+        selectCourseIndex: -1,
         course: '',
         hours: '',
         course_slogan: '',
@@ -126,10 +128,9 @@
         }
       },
       initCourseDetail (){
-          var courseId=this.$route.params.id
-
+        var courseId=this.courseId
         var that = this
-        var url = 'http://127.0.0.1:8000/courses/' + courseId + '.json'
+        var url = this.$store.state.apiList.courses + courseId + '.json'
         this.$axios.request({
           url: url,
           method: 'GET',
@@ -147,7 +148,6 @@
           that.video_brief_link = response.data.courses.video_brief_link
           that.teachers = response.data.courses.teachers
           that.coursechapterList = response.data.coursechapterList
-
         })
       },
       recommendCourse: function (courseId) {

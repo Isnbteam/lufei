@@ -24,7 +24,7 @@
 
 <script>
 export default {
-  name: 'HelloWorld',
+  name: 'news',
   data () {
     return {
       courseList:[]

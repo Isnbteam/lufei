@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'app.apps.AppConfig',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -133,3 +134,14 @@ STATICFILES_DIRS=[
 ]
 MEDIA_ROOT=os.path.join(BASE_DIR,"app","media","uploads")
 MEDIA_URL="/media/"
+
+CACHES = {
+							"default": {
+								"BACKEND": "django_redis.cache.RedisCache",
+								"LOCATION": "redis://192.168.20.56:6379",
+								"OPTIONS": {
+									"CLIENT_CLASS": "django_redis.client.DefaultClient",
+									#"PASSWORD": "asdfasdf",
+								}
+							}
+						}

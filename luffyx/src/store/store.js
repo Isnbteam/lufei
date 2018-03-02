@@ -9,7 +9,11 @@ export default new Vuex.Store({
   // 组件中通过 this.$store.state.username 调用
   state: {
     username: Cookie.get('username'),
-    token: Cookie.get('token')
+    token: Cookie.get('token'),
+    apiList: {
+      courses: 'http://127.0.0.1:8000/courses/',
+
+    }
   },
   mutations: {
     // 组件中通过 this.$store.commit(参数)  调用

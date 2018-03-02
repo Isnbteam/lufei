@@ -38,7 +38,7 @@ class LoginView(views.APIView):
             ret['token'] = user_obj.userauthtoken.token
         else:
             #ret['code'] = 404
-            print(111)
+
             return HttpResponse('没有该用户，无法登陆')
 
         response = JsonResponse(ret)
@@ -194,7 +194,7 @@ class NewsView(views.APIView):
         else:
             article_list = models.Article.objects.all()
             ser = NewsSerializers(instance=article_list, many=True)
-            print(ser.data)
+            # print(ser.data)
             response = JsonResponse(ser.data, safe=False)
         response['Access-Control-Allow-Origin'] = '*'
         response['Access-Control-Allow-Headers'] = '*'  # 允许的请求头
