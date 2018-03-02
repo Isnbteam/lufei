@@ -16,6 +16,7 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 from app import views
+from app import shopping_car
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^login/', views.LoginView.as_view()),
@@ -25,5 +26,5 @@ urlpatterns = [
     url(r'^degreecourse/(?P<pk>\d+)\.(?P<format>[a-z0-9]+)$', views.DegreeCourseView.as_view()),
     url(r'^news/$', views.NewsView.as_view()),
     url(r'^news/(?P<pk>\d+)\.(?P<format>[a-z0-9]+)$', views.NewsView.as_view()),
-
+    url(r'^shopping_car/$', shopping_car.ShoppingView.as_view()),
 ]

@@ -145,3 +145,4 @@ CACHES = {
 								}
 							}
 						}
+SHOPPING_CAR = "shopping_car"
