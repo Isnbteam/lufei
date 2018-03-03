@@ -26,4 +26,6 @@ urlpatterns = [
     url(r'^news/$', views.NewsView.as_view()),
     url(r'^news/(?P<pk>\d+)\.(?P<format>[a-z0-9]+)$', views.NewsView.as_view()),
 
+    url(r'^shopping_car/$', views.ShoppingCarView.as_view()),
+
 ]

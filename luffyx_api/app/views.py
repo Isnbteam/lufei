@@ -1,13 +1,22 @@
 from django.shortcuts import render, HttpResponse
 from django.http import JsonResponse
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.response import Response
-from rest_framework import views
+from rest_framework.views import APIView
 from rest_framework import serializers
 import json
-
+from app.utils.auth.api_view import AuthAPIView
+from app.utils.exception import PricePolicyDoesNotExist
+from django.conf import settings
+from pool import POOL
 from app import models
 
-class LoginView(views.APIView):
+import redis
+CONN = redis.Redis(connection_pool=POOL)
+
+
+
+class LoginView(APIView):
     authentication_classes=[]
     def get(self,request,*args,**kwargs):
         ret = {
@@ -53,10 +62,6 @@ class LoginView(views.APIView):
         # response['Access-Control-Allow-Methods'] = 'PUT'
         return response
 
-
-
-
-
 class CourseSerializer(serializers.ModelSerializer):
     price=serializers.SerializerMethodField()
     prices=serializers.SerializerMethodField()
@@ -78,6 +83,7 @@ class CourseSerializer(serializers.ModelSerializer):
             if i.content_object==obj:
                 ret.append({'price':i.price,'valid_period':i.get_valid_period_display()})
         return ret
+
 class CourseDetiailSerializer(serializers.ModelSerializer):
     oftenaskedquestion=serializers.SerializerMethodField()
     recommend=serializers.SerializerMethodField()
@@ -98,6 +104,7 @@ class CourseDetiailSerializer(serializers.ModelSerializer):
             ret.append({'id':i.id,'name':i.name})
 
         return ret
+
 class CourseChapterSerializer(serializers.ModelSerializer):
     coursesections=serializers.SerializerMethodField()
     class Meta:
@@ -111,7 +118,7 @@ class CourseChapterSerializer(serializers.ModelSerializer):
             ret.append({'name':i.name,'video_time':i.video_time})
         return ret
 
-class CourseView(views.APIView):
+class CourseView(APIView):
     def get(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
         if pk:
@@ -144,12 +151,14 @@ class CourseView(views.APIView):
         response = Response(ret)
         response['Access-Control-Allow-Origin'] = "*"
         return response
+
 class DegreeCourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.DegreeCourse
         fields = "__all__"
         depth = 1
-class DegreeCourseView(views.APIView):
+
+class DegreeCourseView(APIView):
     def get(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
         if pk:
@@ -182,7 +191,10 @@ class NewsSerializers(serializers.ModelSerializer):
         fields = '__all__'
         depth = 2
 
-class NewsView(views.APIView):
+class NewsView(APIView):
+    """
+    深科技页面
+    """
 
     def get(self, request, *args, **kwargs):
 
@@ -252,14 +264,13 @@ class NewsView(views.APIView):
         response['Access-Control-Allow-Methods'] = '*'
         return response
 
-
 class CommentSerializers(serializers.ModelSerializer):
     class Meta:
         model = models.Comment
         fields = '__all__'
         depth = 1
 
-class CommentView(views.APIView):
+class CommentView(APIView):
 
     def get(self, request, *args, **kwargs):
         comment_list = models.Comment.objects.all()
@@ -276,3 +287,82 @@ class CommentView(views.APIView):
         response['Access-Control-Allow-Methods'] = '*'
         # return response
         return response
+
+
+class ShoppingCarView(AuthAPIView,APIView):
+
+    def get(self,request,*args,**kwargs):
+        """
+        查看购物车
+        :param request:
+        :param args:
+        :param kwargs:
+        :return:
+        """
+        course = CONN.hget(settings.LUFFY_SHOPPING_CAR,request.user.id)
+        ret = json.loads(course.decode('utf-8'))
+        return Response(ret)
+
+    def post(self,request,*args,**kwargs):
+        """
+        获取课程ID和价格策略ID，放入redis
+        :param request:
+        :param args:
+        :param kwargs:
+        :return:
+        """
+        ret = {'code':1000,'msg':None}
+        try:
+            course_id = request.data.get('course_id')
+            price_policy_id = request.data.get('price_policy_id')
+            # 1. 获取课程
+            course_obj = models.Course.objects.get(id=course_id)
+            # 2. 获取当前课程的所有价格策略: id, 有效期，价格
+            price_policy_list = []
+            flag = False
+            price_policy_objs = course_obj.price_policy.all()
+            for item in price_policy_objs:
+                if item.id == price_policy_id:
+                    flag = True
+                price_policy_list.append({'id':item.id, 'valid_period':item.get_valid_period_display(),'price':item.price})
+            if not flag:
+                raise PricePolicyDoesNotExist()
+
+            # 3. 课程和价格策略均没有问题，将课程和价格策略放到redis中
+            # 课程id,课程图片地址,课程标题，所有价格策略，默认价格策略
+            course_dict = {
+                'id': course_obj.id,
+                'img': course_obj.course_img,
+                'title': course_obj.name,
+                'price_policy_list': price_policy_list,
+                'default_policy_id': price_policy_id
+            }
+
+            # a. 获取当前用户购物车中的课程 car = {1: {,,,}, 2:{....}}
+            # b. car[course_obj.id] = course_dict
+            # c. conn.hset('luffy_shopping_car',request.user.id,car)
+            nothing = CONN.hget(settings.LUFFY_SHOPPING_CAR, request.user.id)
+            if not nothing:
+                data = {course_obj.id: course_dict}
+            else:
+                data = json.loads(nothing.decode('utf-8'))
+                data[course_obj.id] = course_dict
+
+            CONN.hset(settings.LUFFY_SHOPPING_CAR, request.user.id, json.dumps(data))
+
+
+        except ObjectDoesNotExist as e:
+            ret['code'] = 1001
+            ret['msg'] = "课程不存在"
+        except PricePolicyDoesNotExist as e:
+            ret['code'] = 1002
+            ret['msg'] = "价格策略不存在"
+        except Exception as e:
+            ret['code'] = 1003
+            ret['msg'] = "添加购物车异常"
+
+        return Response(ret)
+
+
+
+
