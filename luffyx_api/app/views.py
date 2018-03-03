@@ -15,7 +15,6 @@ import redis
 CONN = redis.Redis(connection_pool=POOL)
 
 
-
 class LoginView(APIView):
     authentication_classes=[]
     def get(self,request,*args,**kwargs):
@@ -349,7 +348,6 @@ class ShoppingCarView(AuthAPIView,APIView):
                 data[course_obj.id] = course_dict
 
             CONN.hset(settings.LUFFY_SHOPPING_CAR, request.user.id, json.dumps(data))
-
 
         except ObjectDoesNotExist as e:
             ret['code'] = 1001
