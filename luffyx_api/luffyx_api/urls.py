@@ -27,4 +27,6 @@ urlpatterns = [
     url(r'^news/$', views.NewsView.as_view()),
     url(r'^news/(?P<pk>\d+)\.(?P<format>[a-z0-9]+)$', views.NewsView.as_view()),
     url(r'^shopping_car/$', shopping_car.ShoppingView.as_view()),
+    url(r'^settlement/$', shopping_car.SettlementView.as_view()),
+    url(r'^couponprice/$', shopping_car.CouPonPriceView.as_view()),
 ]

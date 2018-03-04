@@ -174,6 +174,27 @@ class Coupon(models.Model):
         super(Coupon, self).save(*args, **kwargs)
 
 
+class CouponRecord(models.Model):
+    """优惠券发放、消费纪录"""
+    coupon = models.ForeignKey("Coupon")
+    number = models.CharField(max_length=64, unique=False)
+    # 有问题：不能为空
+    account = models.ForeignKey("Account", verbose_name="拥有者")
+    # 有问题：去掉3
+    status_choices = ((0, '未使用'), (1, '已使用'), (2, '已过期'), (3, '未领取'))
+    status = models.SmallIntegerField(choices=status_choices, default=0)
+    # 有问题：不能为空
+    get_time = models.DateTimeField(blank=True, null=True, verbose_name="领取时间", help_text="用户领取时间")
+
+    used_time = models.DateTimeField(blank=True, null=True, verbose_name="使用时间")
+    order = models.ForeignKey("Order", blank=True, null=True, verbose_name="关联订单")  # 一个订单可以有多个优惠券
+    date = models.DateTimeField(auto_now_add=True, verbose_name="生成时间")
+
+    _coupon = GenericRelation("Coupon")
+    def __str__(self):
+        return '%s-%s-%s' % (self.account, self.number, self.status)
+
+
 class CourseDetail(models.Model):
     """课程详情页内容"""
     course = models.OneToOneField("Course")
@@ -339,6 +360,10 @@ class Comment(models.Model):
 class Account(models.Model):
     username = models.CharField("用户名", max_length=64, unique=True)
     password = models.CharField('password', max_length=128)
+    class Meta:
+        verbose_name_plural="用户表"
+    def __str__(self):
+        return self.username
 
 class UserAuthToken(models.Model):
     """
@@ -347,11 +372,54 @@ class UserAuthToken(models.Model):
     user = models.OneToOneField(to="Account")
     token = models.CharField(max_length=40)
     created = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        verbose_name_plural="用户Token表"
+    def __str__(self):
+        return self.user.username
 
 
 
 
+class Order(models.Model):
+    """订单"""
+    payment_type_choices = ((0, '微信'), (1, '支付宝'), (2, '优惠码'), (3, '贝里'))
+    payment_type = models.SmallIntegerField(choices=payment_type_choices)
+    payment_number = models.CharField(max_length=128, verbose_name="支付第3方订单号", null=True, blank=True)
+    order_number = models.CharField(max_length=128, verbose_name="订单号", unique=True)  # 考虑到订单合并支付的问题
+    account = models.ForeignKey("Account")
+    actual_amount = models.FloatField(verbose_name="实付金额")
 
+    status_choices = ((0, '交易成功'), (1, '待支付'), (2, '退费申请中'), (3, '已退费'), (4, '主动取消'), (5, '超时取消'))
+    status = models.SmallIntegerField(choices=status_choices, verbose_name="状态")
+    date = models.DateTimeField(auto_now_add=True, verbose_name="订单生成时间")
+    pay_time = models.DateTimeField(blank=True, null=True, verbose_name="付款时间")
+    cancel_time = models.DateTimeField(blank=True, null=True, verbose_name="订单取消时间")
+
+    def __str__(self):
+        return "%s" % self.order_number
+
+
+class OrderDetail(models.Model):
+    """订单详情"""
+    order = models.ForeignKey("Order")
+
+    content_type = models.ForeignKey(ContentType)  # 可关联普通课程或学位
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+
+    original_price = models.FloatField("课程原价")
+    price = models.FloatField("折后价格")
+    content = models.CharField(max_length=255, blank=True, null=True)  # ？
+    valid_period_display = models.CharField("有效期显示", max_length=32)  # 在订单页显示
+    valid_period = models.PositiveIntegerField("有效期(days)")  # 课程有效期
+    memo = models.CharField(max_length=255, blank=True, null=True)
+
+    # def __str__(self):
+    #     return "%s - %s - %s" % (self.order, self.content_type, self.price)
+
+    class Meta:
+        # unique_together = ("order", 'course')
+        unique_together = ("order", 'content_type', 'object_id')
 
 
 
