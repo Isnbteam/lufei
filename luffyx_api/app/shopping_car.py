@@ -113,24 +113,6 @@ class ShoppingView(AuthAPIView, APIView):
         #     ret['msg'] = "更新购物车异常"
         return Response(ret)
 
-    # def delete(self,request,*args,**kwargs):
-    #     ret = {'code': 1000, 'msg': None}
-    #     try:
-    #         course_id = request.data.get('course_id')
-    #         course = conn.hget(settings.SHOPPING_CAR, request.user.id)
-    #         course_dict = json.loads(course.decode('utf-8'))
-    #         ks = []
-    #         for k, v in course_dict.items():
-    #             ks.append(k)
-    #         if str(course_id) not in ks:
-    #             raise courseDosenotExist
-    #         else:
-    #             del course_dict[str(course_id)]
-    #             conn.hset(settings.SHOPPING_CAR, request.user.id, json.dumps(course_dict))
-    #     except courseDosenotExist as e:
-    #         ret['code'] = 1001
-    #         ret['msg'] = "课程不存在"
-    #     return Response(ret)
     def delete(self, request, *args, **kwargs):
         ret = {'code': 1000, 'msg': None}
         try:
@@ -220,30 +202,59 @@ class CouPonPriceView(AuthAPIView, APIView):
         """
          {
             "corse": [{"课程id:课程id",
-                       "课程优惠券id:课程优惠券id",
+                       "课程优惠券:{
+                                "id": 3,
+                                "brief": "满1000减200",
+                                "coupon_type": 1,
+                                "money_equivalent_value": 200,
+                                "off_percent": null,
+                                "minimum_consume": 1000},
                        "价格：价格"},
-                      {"课程id:课程id"
-                       "课程优惠券id:课程优惠券id",
-                       "价格：价格"}
-                , {"课程id:课程id"
-                   "课程优惠券id:课程优惠券id",
-                   "价格：价格"}],
-            "全局优惠卷id": "全局优惠券id"
+
+                   ],
+            "全局优惠卷": {
+                                "id": 3,
+                                "brief": "满1000减200",
+                                "coupon_type": 1,
+                                "money_equivalent_value": 200,
+                                "off_percent": null,
+                                "minimum_consume": 1000},
         }
         """
         ret = {'code': 1000, 'msg': None}
         try:
             course_list = request.data.get('course')
-            coupon_id = request.data.get('coupon_id')
+            globel_coupon = request.data.get('globel_coupon')
             z_price=0
 
             for course in course_list:
                 course_id=course.get("course_id")
-                course_coupon_id=course.get("course_coupon_id")
+                course_coupon=course.get("course_coupon")
                 price=course.get("price")
+                if course_coupon["coupon_type"]==1:
+                    price-=course_coupon["money_equivalent_value"]
+                elif course_coupon["coupon_type"]==2:
+                    if price > course_coupon["minimum_consume"]:price=price*(course_coupon["off_percent"]/100)
+                elif course_coupon["coupon_type"]==3:
+                    if price > course_coupon["minimum_consume"]:price-=course_coupon["money_equivalent_value"]
+                else:
+                    ret["msg"]="课程优惠券类型错误！"
+                z_price+=price
+            if globel_coupon["coupon_type"]==1:
+                z_price-=globel_coupon["money_equivalent_value"]
+            elif globel_coupon["coupon_type"]==2:
+                if z_price >globel_coupon["minimum_consume"]:z_price=z_price*(globel_coupon["off_percent"]/100)
+            elif globel_coupon["coupon_type"]==3:
+                if z_price > globel_coupon["minimum_consume"]: z_price -= globel_coupon["money_equivalent_value"]
+
+            else:
+                ret["msg"] = "优惠券类型错误！"
+
 
         except Exception as e:
             ret["msg"] = e
         return Response(ret)
+
+
 class Alipy(AuthAPIView, APIView):
     pass
