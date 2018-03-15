@@ -18,6 +18,7 @@ CONN = redis.Redis(connection_pool=POOL)
 class LoginView(APIView):
     authentication_classes=[]
     def get(self,request,*args,**kwargs):
+        self.dispatch()
         ret = {
             'code':1000,
             'data':'老男孩'
@@ -92,6 +93,7 @@ class CourseDetiailSerializer(serializers.ModelSerializer):
         depth = 1
 
     def get_oftenaskedquestion(self, obj):
+
         ret = []
         for i in models.OftenAskedQuestion.objects.all():
             if i.content_object==obj.course:
